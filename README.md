@@ -1,16 +1,24 @@
-# PMLDL Assignment 1: MLOps Pipeline (Iris)
+Вот полностью новый `README.md` на английском:
 
-Полностью автоматизированный MLOps-пайплайн из трёх стадий:
+```markdown
+# PMLDL Assignment 1: MLOps Pipeline
 
-1. **Data Engineering** — загрузка, очистка, удаление выбросов, split
-2. **Model Engineering** — обучение RandomForest + логирование в MLflow
-3. **Deployment** — FastAPI + Streamlit в **отдельных Docker-контейнерах**
+Fully automated MLOps pipeline for Iris flower classification.
 
-Пайплайн автоматически запускается **каждые 5 минут** через Apache Airflow.
+## Overview
+
+This project implements a complete MLOps pipeline with three required stages:
+
+1. **Data Engineering** – load, clean, remove outliers, and split data
+2. **Model Engineering** – train a Random Forest model, evaluate it, and log metrics with MLflow
+3. **Deployment** – serve the model via FastAPI and provide a Streamlit web interface
+
+The API and the web application run in **separate Docker containers**.  
+The entire pipeline can be executed automatically every 5 minutes using a Windows batch script + Task Scheduler (Airflow alternative for Windows).
 
 ---
 
-## Структура репозитория
+## Project Structure
 
 ```
 ├── code
@@ -31,74 +39,117 @@
 ├── data
 │   ├── processed
 │   └── raw
-├── models                  # сюда сохраняется model.joblib
+├── models
 ├── notebooks
 ├── services
 │   └── airflow
-│       ├── dags
-│       │   └── ml_pipeline_dag.py
-│       └── logs
+│       └── dags
+│           └── ml_pipeline_dag.py
 ├── requirements.txt
+├── run_pipeline.bat
 └── README.md
 ```
 
 ---
 
-## Быстрый старт (ручной запуск)
+## Quick Start
 
-### 1. Клонируйте репозиторий и создайте окружение
+### 1. Create virtual environment and install dependencies
 
 ```bash
-git clone <your-repo-url>
-cd pmldl-mlops-assignment
-
 python -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
+venv\Scripts\activate          # Windows
 pip install -r requirements.txt
 ```
 
-### 2. Запустите Stage 1 и Stage 2
+### 2. Run the full pipeline
 
 ```bash
-python code/datasets/data_processing.py
-python code/models/train_model.py
+run_pipeline.bat
 ```
 
-После этого в папке `models/` появятся файлы:
-- `model.joblib`
-- `feature_names.joblib`
+This script will sequentially:
+- Process the data
+- Train the model
+- Build and start Docker containers
 
-### 3. Запустите Deployment (Docker)
+### 3. Access the services
 
-```bash
-cd code/deployment
-docker compose up --build -d
-```
+| Service          | URL                        | Description                  |
+|------------------|----------------------------|------------------------------|
+| **API**          | http://localhost:8000      | FastAPI model service        |
+| **API Docs**     | http://localhost:8000/docs | Interactive Swagger UI       |
+| **Web App**      | http://localhost:8501      | Streamlit prediction interface |
 
-### 4. Откройте сервисы
-
-| Сервис       | URL                          | Описание                  |
-|--------------|------------------------------|---------------------------|
-| **API**      | http://localhost:8000        | FastAPI                   |
-| **Swagger**  | http://localhost:8000/docs   | Интерактивная документация|
-| **App**      | http://localhost:8501        | Streamlit веб-приложение  |
-
-### 5. Остановка контейнеров
+### 4. Stop the containers
 
 ```bash
-cd code/deployment
+cd code\deployment
 docker compose down
 ```
 
 ---
 
-## Автоматизация через Airflow
+## Pipeline Stages in Detail
 
-1. Установите Apache Airflow (или используйте Docker-образ Airflow).
-2. Скопируйте файл `services/airflow/dags/ml_pipeline_dag.py` в папку `dags` вашего Airflow.
-3. Убедитесь, что:
-   - Проект доступен из контейнера/процесса Airflow
-   - Docker доступен (для task Deployment)
-4. DAG называется `mlops_iris_pipeline` и запускается каждые 5 минут.
+### Stage 1: Data Engineering
+- Loads the Iris dataset
+- Saves raw data to `data/raw/`
+- Removes missing values and outliers (IQR method)
+- Splits data into train/test (80/20, stratified)
+- Saves processed files to `data/processed/`
 
-Если один прогон занимает больше времени — измените `schedule_interval` на `*/10 * * * *` или `*/15 * * * *`.
+### Stage 2: Model Engineering
+- Trains a `RandomForestClassifier`
+- Evaluates the model on the test set
+- Logs parameters and metrics to MLflow
+- Saves the trained model to `models/model.joblib`
+
+### Stage 3: Deployment
+- **API** (FastAPI) – loads the model and exposes `/predict` endpoint
+- **Web App** (Streamlit) – provides input fields and displays predictions
+- Both services run in separate Docker containers and communicate over a Docker network
+
+---
+
+## Automation
+
+Because Apache Airflow has limited support on Windows, automation is implemented using:
+
+- `run_pipeline.bat` – sequential execution of all stages
+- Windows Task Scheduler – runs the script every 5 minutes
+
+An Airflow DAG is still included in `services/airflow/dags/` for users who run the project on Linux or WSL.
+
+---
+
+## Manual Execution (step by step)
+
+```bash
+# Stage 1
+python code/datasets/data_processing.py
+
+# Stage 2
+python code/models/train_model.py
+
+# Stage 3
+cd code/deployment
+docker compose up --build -d
+```
+
+---
+
+## Requirements
+
+- Python 3.10+ (3.11 or 3.12 recommended)
+- Docker Desktop
+- Windows Task Scheduler (for automation)
+
+---
+
+## Notes
+
+- The model file (`models/model.joblib`) is generated at runtime and does not need to be pushed to GitHub.
+- The dataset used is **Iris** (not restricted by the assignment).
+- API and Streamlit application run in **separate Docker containers** as required.
+```
