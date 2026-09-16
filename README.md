@@ -21,28 +21,16 @@ The entire pipeline can be executed automatically every 5 minutes using a Window
 ```
 ├── code
 │   ├── datasets
-│   │   └── data_processing.py
 │   ├── models
-│   │   └── train_model.py
 │   └── deployment
 │       ├── api
-│       │   ├── Dockerfile
-│       │   ├── main.py
-│       │   └── requirements.txt
 │       ├── app
-│       │   ├── Dockerfile
-│       │   ├── app.py
-│       │   └── requirements.txt
 │       └── docker-compose.yml
 ├── data
 │   ├── processed
 │   └── raw
 ├── models
 ├── notebooks
-├── services
-│   └── airflow
-│       └── dags
-│           └── ml_pipeline_dag.py
 ├── requirements.txt
 ├── run_pipeline.bat
 └── README.md
