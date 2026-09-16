@@ -1,5 +1,3 @@
-Вот полностью новый `README.md` на английском:
-
 ```markdown
 # PMLDL Assignment 1: MLOps Pipeline
 
