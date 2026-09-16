@@ -1,4 +1,3 @@
-```markdown
 # PMLDL Assignment 1: MLOps Pipeline
 
 Fully automated MLOps pipeline for Iris flower classification.
@@ -12,7 +11,7 @@ This project implements a complete MLOps pipeline with three required stages:
 3. **Deployment** – serve the model via FastAPI and provide a Streamlit web interface
 
 The API and the web application run in **separate Docker containers**.  
-The entire pipeline can be executed automatically every 5 minutes using a Windows batch script + Task Scheduler (Airflow alternative for Windows).
+The entire pipeline can be executed automatically every 5 minutes using a Windows batch script + Task Scheduler.
 
 ---
 
@@ -21,10 +20,18 @@ The entire pipeline can be executed automatically every 5 minutes using a Window
 ```
 ├── code
 │   ├── datasets
+│   │   └── data_processing.py
 │   ├── models
+│   │   └── train_model.py
 │   └── deployment
 │       ├── api
+│       │   ├── Dockerfile
+│       │   ├── main.py
+│       │   └── requirements.txt
 │       ├── app
+│       │   ├── Dockerfile
+│       │   ├── app.py
+│       │   └── requirements.txt
 │       └── docker-compose.yml
 ├── data
 │   ├── processed
@@ -61,10 +68,10 @@ This script will sequentially:
 
 ### 3. Access the services
 
-| Service          | URL                        | Description                  |
-|------------------|----------------------------|------------------------------|
-| **API**          | http://localhost:8000      | FastAPI model service        |
-| **API Docs**     | http://localhost:8000/docs | Interactive Swagger UI       |
+| Service          | URL                        | Description                    |
+|------------------|----------------------------|--------------------------------|
+| **API**          | http://localhost:8000      | FastAPI model service          |
+| **API Docs**     | http://localhost:8000/docs | Interactive Swagger UI         |
 | **Web App**      | http://localhost:8501      | Streamlit prediction interface |
 
 ### 4. Stop the containers
@@ -100,12 +107,18 @@ docker compose down
 
 ## Automation
 
-Because Apache Airflow has limited support on Windows, automation is implemented using:
+Automation is implemented using:
 
-- `run_pipeline.bat` – sequential execution of all stages
+- `run_pipeline.bat` – sequential execution of all three stages
 - Windows Task Scheduler – runs the script every 5 minutes
 
-An Airflow DAG is still included in `services/airflow/dags/` for users who run the project on Linux or WSL.
+### How to set up Task Scheduler
+
+1. Open **Task Scheduler**
+2. Create a new task
+3. Set the trigger to repeat every 5 minutes
+4. Set the action to run `run_pipeline.bat`
+5. Enable “Run with highest privileges”
 
 ---
 
@@ -136,6 +149,5 @@ docker compose up --build -d
 ## Notes
 
 - The model file (`models/model.joblib`) is generated at runtime and does not need to be pushed to GitHub.
-- The dataset used is **Iris** (not restricted by the assignment).
-- API and Streamlit application run in **separate Docker containers** as required.
-```
+- The dataset used is **Iris** (allowed by the assignment).
+- API and Streamlit application run in **separate Docker containers** as required by the assignment.
