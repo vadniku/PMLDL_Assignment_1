@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: iris-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the trained model from host
+      - ../../models:/app/models:ro
+    networks:
+      - mlops-net
+    restart: unless-stopped
+
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: iris-app
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    networks:
+      - mlops-net
+    restart: unless-stopped
+
+networks:
+  mlops-net:
+    driver: bridge
